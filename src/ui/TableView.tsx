@@ -54,11 +54,17 @@ export function TableView() {
             {a.ordered.map((p) => (
               <Tile key={p.tile} tile={p.tile} small selected={selectedSet.has(p.tile)} onTap={myTurn ? onTile : undefined} />
             ))}
-            {placing && (
-              <button type="button" className="tile sm ghost" aria-label="Añadir aquí" onClick={(e) => { e.stopPropagation(); moveTo({ kind: 'meld', meldId: m.id }) }}>
-                <span className="num">+</span>
-              </button>
-            )}
+            {/* el hueco del "+" está siempre reservado: al seleccionar fichas la mesa no se recoloca */}
+            <button
+              type="button"
+              className={`tile sm ghost ${placing ? '' : 'invisible'}`}
+              aria-label="Añadir aquí"
+              tabIndex={placing ? 0 : -1}
+              aria-hidden={!placing}
+              onClick={(e) => { e.stopPropagation(); if (placing) moveTo({ kind: 'meld', meldId: m.id }) }}
+            >
+              <span className="num">+</span>
+            </button>
           </div>
         )
       })}
