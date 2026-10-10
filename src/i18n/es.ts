@@ -31,8 +31,9 @@ export const es: Record<string, string> = {
   'game.undo': 'Deshacer',
   'game.reset': 'Recoger',
   'game.newMeld': 'Nueva jugada',
+  'game.newMeldShort': 'Jugada',
   'game.toRack': 'Al atril',
-  'game.emptyTable': 'La mesa está vacía. Toca fichas de tu atril y luego «Nueva jugada».',
+  'game.emptyTable': 'La mesa está vacía. Toca fichas de tu atril y luego pulsa «+ Nueva jugada».',
   'game.firstMeldHint': '1ª bajada {points}/{need}',
   'game.sortColor': 'Color',
   'game.sortNumber': 'Número',
@@ -118,6 +119,6 @@ export const es: Record<string, string> = {
     'Primera bajada: tienes que colocar jugadas propias que sumen al menos 30 puntos. Hasta entonces no puedes tocar la mesa.\n\n' +
     'Después puedes reorganizar todo: partir escaleras, mover fichas entre jugadas o añadir a las de otros, siempre que al terminar el turno todo sea válido y hayas puesto al menos una ficha tuya.\n\n' +
     'Si no puedes o no quieres jugar, robas una ficha.\n\n' +
-    'Cómo mover: toca una o varias fichas (se levantan) y luego toca el «+» de una jugada, «Nueva jugada» o tu atril.\n\n' +
+    'Cómo mover: toca una o varias fichas (se levantan) y luego toca el «+» de una jugada de la mesa, el botón «+ Nueva jugada» o tu atril.\n\n' +
     'Puntos: el ganador suma lo que les queda a los demás (comodín = 30) y los demás lo restan.',
 }

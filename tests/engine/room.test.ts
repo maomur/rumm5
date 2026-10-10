@@ -65,6 +65,6 @@ describe('sala online', () => {
     expect(r.room.game!.current).toBe(1)
   })
   it('presupuesto de animación', () => {
-    expect(animationBudgetMs([{ type: 'turnStart', playerId: 'a' }, { type: 'draw', playerId: 'a', count: 1, tiles: [1] }])).toBe(1250)
+    expect(animationBudgetMs([{ type: 'turnStart', playerId: 'a' }, { type: 'draw', playerId: 'a', count: 1, tiles: [1] }])).toBe(1750)
   })
 })

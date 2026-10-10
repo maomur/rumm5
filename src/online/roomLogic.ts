@@ -1,5 +1,5 @@
 // Lógica de sala PURA (sin red ni temporizadores): la usa el Durable Object y se testea con Vitest
-import { decideBot } from '../engine/bot'
+import { botSteps, decideBot } from '../engine/bot'
 import { currentPlayer } from '../engine/queries'
 import { applyAction, RuleError } from '../engine/reducer'
 import { createGame } from '../engine/state'
@@ -24,6 +24,8 @@ export interface Room {
   turnSeconds: number
   deadline: number | null
   seatSeq: number
+  /** pasos pendientes del bot que está colocando jugadas */
+  steps?: Action[]
 }
 
 export interface HandleResult {
@@ -39,13 +41,15 @@ export function animationBudgetMs(events: GameEvent[]): number {
   let ms = 0
   for (const e of events) {
     if (e.type === 'turnStart') ms += 450
-    else if (e.type === 'draw') ms += e.penalty ? 2600 : 800
-    else if (e.type === 'pass') ms += 1000
-    else if (e.type === 'play') ms += e.firstMeld ? 2200 : 1300
+    else if (e.type === 'draw') ms += e.penalty ? 2600 : 1300
+    else if (e.type === 'pass') ms += 1300
+    else if (e.type === 'play') ms += e.firstMeld ? 2200 : 1700
     else if (e.type === 'rummy') ms += 900
   }
   return ms
 }
+
+export type AutoKind = 'bot' | 'absent' | 'timeout' | 'step'
 
 export class RoomLogic {
   room: Room
@@ -174,10 +178,11 @@ export class RoomLogic {
   }
 
   /** ¿Quién debe actuar sin que nadie toque nada? (bots, humanos ausentes, tiempo agotado) */
-  pendingAutoActor(now: number): { at: number; kind: 'bot' | 'absent' | 'timeout' } | null {
+  pendingAutoActor(now: number): { at: number; kind: AutoKind } | null {
     const r = this.room
     const g = r.game
     if (!g || g.phase !== 'play') return null
+    if (r.steps?.length) return { at: now, kind: 'step' }
     const p = currentPlayer(g)
     const seat = r.seats.find((s) => s.id === p.id)
     if (!seat) return null
@@ -187,11 +192,22 @@ export class RoomLogic {
     return null
   }
 
-  runAuto(kind: 'bot' | 'absent' | 'timeout', now: number): HandleResult {
-    const g = this.room.game!
+  runAuto(kind: AutoKind, now: number): HandleResult {
+    const r = this.room
+    const g = r.game!
     const p = currentPlayer(g)
     if (kind === 'timeout') return this.apply({ type: 'timeout', playerId: p.id }, now, null, null)
-    const a = kind === 'absent' ? decideBot({ ...g, players: g.players.map((x) => (x.id === p.id ? { ...x, botLevel: 'medium' as BotLevel } : x)) }) : decideBot(g)
-    return this.apply(a, now, null, null)
+    if (kind === 'step') {
+      const step = r.steps!.shift()!
+      const res = this.apply(step, now, null, null)
+      if (res.error) r.steps = []
+      return res
+    }
+    const asBot = kind === 'absent' ? { ...g, players: g.players.map((x) => (x.id === p.id ? { ...x, botLevel: 'medium' as BotLevel } : x)) } : g
+    const [first, ...rest] = botSteps(asBot, decideBot(asBot))
+    r.steps = rest
+    const res = this.apply(first, now, null, null)
+    if (res.error) r.steps = []
+    return res
   }
 }

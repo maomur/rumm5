@@ -2,8 +2,9 @@ import { routePartykitRequest, Server, type Connection, type WSMessage } from 'p
 import { animationBudgetMs, RoomLogic, type HandleResult, type Room } from '../src/online/roomLogic'
 import type { ClientMsg, ServerMsg } from '../src/online/protocol'
 
-const VERSION = 'v2 · 2026-10-10'
-const BOT_DELAY_MS = 1000
+const VERSION = 'v3 · 2026-10-10'
+const BOT_DELAY_MS = 1700
+const BOT_STEP_MS = 1300
 
 interface Env {
   GameRoom: DurableObjectNamespace
@@ -82,7 +83,7 @@ export class GameRoom extends Server<Env> {
     const now = Date.now()
     const next = this.logic.pendingAutoActor(now)
     if (!next) return
-    const wait = next.kind === 'bot' ? this.lastBudget + BOT_DELAY_MS : Math.max(0, next.at - now)
+    const wait = next.kind === 'step' ? BOT_STEP_MS : next.kind === 'bot' ? this.lastBudget + BOT_DELAY_MS : Math.max(0, next.at - now)
     this.timer = setTimeout(async () => {
       this.timer = null
       this.lastBudget = 0

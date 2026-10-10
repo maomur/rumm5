@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { setMuted, sfx } from '../audio/sfx'
-import { decideBot } from '../engine/bot'
+import { botSteps, decideBot } from '../engine/bot'
 import { currentPlayer, playerById } from '../engine/queries'
 import { applyAction, RuleError } from '../engine/reducer'
 import { solve } from '../engine/solver'
@@ -12,11 +12,13 @@ import { fly } from '../ui/fx'
 import { loadGame, loadPrefs, saveGame, savePrefs } from './persistence'
 
 // Ritmos (más lentos de lo que parece necesario: así se entiende lo que pasa)
-export const OTHER_PLAY_MS = 1300
-export const DRAW_MS = 800
-export const PASS_MS = 1000
+export const OTHER_PLAY_MS = 1700
+export const DRAW_MS = 1300
+export const PASS_MS = 1300
 export const TURN_MS = 450
-export const BOT_DELAY_MS = 1000
+export const BOT_DELAY_MS = 1700
+/** pausa entre cada jugada que coloca un bot */
+export const BOT_STEP_MS = 1300
 export const PENALTY_MS = 2600
 export const FIRST_MELD_MS = 2200
 
@@ -187,8 +189,27 @@ export const useGame = create<Store>((set, get) => {
       botTimer = null
       const now = get()
       if (!now.game || now.busy || now.mode !== 'local' || !currentPlayer(now.game).isBot) return
-      now.dispatch(decideBot(now.game))
+      runBotSteps(botSteps(now.game, decideBot(now.game)))
     }, BOT_DELAY_MS)
+  }
+
+  /** El bot coloca sus jugadas de una en una, con pausa entre cada una */
+  function runBotSteps(steps: Action[]) {
+    const [step, ...rest] = steps
+    if (!step) return
+    if (!rest.length) { get().dispatch(step); return }
+    set({ busy: true })
+    get().dispatch(step)
+    const g = get().game!
+    if (step.type === 'move') {
+      const id = step.to.kind === 'meld' ? step.to.meldId : g.draft.table[g.draft.table.length - 1]?.id
+      if (id !== undefined) set({ glowMelds: [id] })
+    }
+    botTimer = setTimeout(() => {
+      botTimer = null
+      set({ busy: false, glowMelds: [] })
+      runBotSteps(rest)
+    }, BOT_STEP_MS)
   }
 
   function fail(e: unknown, a: Action) {

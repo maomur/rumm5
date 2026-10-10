@@ -1,4 +1,5 @@
 import { currentPlayer } from './queries'
+import { applyAction } from './reducer'
 import { solve } from './solver'
 import { analyzeMeld, penaltyValue } from './tiles'
 import type { Action, BotLevel, GameState, TileId } from './types'
@@ -84,4 +85,45 @@ export function decideBot(s: GameState): Action {
   }
   if (!best) return draw
   return { type: 'play', playerId: p.id, melds: best.melds }
+}
+
+/**
+ * Convierte una jugada completa del bot en pasos visibles: una jugada cada vez
+ * (mover fichas a una jugada existente o a una nueva) y al final "Terminar".
+ * Si algo no cuadra, devuelve la jugada de un golpe.
+ */
+export function botSteps(s: GameState, action: Action): Action[] {
+  if (action.type !== 'play') return [action]
+  const pid = action.playerId
+  const steps: Action[] = []
+  let cur = s
+  const key = (t: TileId[]) => [...t].sort((a, b) => a - b).join(',')
+  try {
+    const claimed = new Set<number>()
+    for (const target of action.melds) {
+      const want = new Set(target)
+      if (cur.draft.table.some((m) => key(m.tiles) === key(target))) continue
+      // la jugada de la mesa que más fichas comparte con la que queremos formar
+      let best: { id: number; overlap: number } | null = null
+      for (const m of cur.draft.table) {
+        if (claimed.has(m.id)) continue
+        const overlap = m.tiles.filter((t) => want.has(t)).length
+        if (overlap > 0 && (!best || overlap > best.overlap)) best = { id: m.id, overlap }
+      }
+      const step: Action = best
+        ? { type: 'move', playerId: pid, tiles: target.filter((t) => !cur.draft.table.find((m) => m.id === best!.id)!.tiles.includes(t)), to: { kind: 'meld', meldId: best.id } }
+        : { type: 'move', playerId: pid, tiles: [...target], to: { kind: 'new' } }
+      if (step.type === 'move' && step.tiles.length === 0) { if (best) claimed.add(best.id); continue }
+      cur = applyAction(cur, step)
+      const placedId = best ? best.id : cur.draft.table[cur.draft.table.length - 1].id
+      claimed.add(placedId)
+      steps.push(step)
+    }
+    const end: Action = { type: 'endTurn', playerId: pid }
+    applyAction(cur, end)
+    steps.push(end)
+    return steps
+  } catch {
+    return [action]
+  }
 }

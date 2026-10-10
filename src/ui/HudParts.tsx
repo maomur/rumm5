@@ -96,6 +96,8 @@ export function ActionBar({ vertical = false }: { vertical?: boolean }) {
   const viewerId = useGame((s) => s.viewerId)
   const dispatch = useGame((s) => s.dispatch)
   const askHint = useGame((s) => s.askHint)
+  const selected = useGame((s) => s.selected)
+  const moveTo = useGame((s) => s.moveSelectedTo)
   const clear = useGame((s) => s.clearSelection)
   const cur = game.phase === 'play' ? currentPlayer(game) : null
   const myTurn = !!cur && cur.id === viewerId
@@ -110,19 +112,26 @@ export function ActionBar({ vertical = false }: { vertical?: boolean }) {
   const id = viewerId!
   const played = draftChanged(game) && placedFromRack(game).length > 0
   const poolEmpty = game.pool.length === 0
+  const selecting = selected.length > 0
   const act = (type: 'undo' | 'reset' | 'draw' | 'endTurn') => () => { if (type !== 'undo') clear(); dispatch({ type, playerId: id }) }
 
   return (
     <div className={vertical ? 'flex flex-col gap-1.5' : 'flex items-center gap-1.5 px-3 py-1.5'}>
       <div className="flex min-w-0 gap-1.5">
-        <ActionButton small onClick={act('undo')} check={canUndo(game, id)} className="flex-1 !px-2.5" >↶<span className={`ml-1 max-[380px]:hidden land:hidden ${played ? 'hidden' : ''}`}>{t('game.undo')}</span></ActionButton>
-        <ActionButton small onClick={act('reset')} check={canReset(game, id)} className="flex-1 !px-2.5">⟲<span className={`ml-1 max-[380px]:hidden land:hidden ${played ? 'hidden' : ''}`}>{t('game.reset')}</span></ActionButton>
-        <ActionButton small onClick={askHint} className="flex-1 !px-2.5" ignoreBusy>💡</ActionButton>
+        <ActionButton small onClick={act('undo')} check={canUndo(game, id)} className="flex-1 !px-2.5" >↶<span className={`ml-1 max-[380px]:hidden land:hidden ${played || selecting ? 'hidden' : ''}`}>{t('game.undo')}</span></ActionButton>
+        <ActionButton small onClick={act('reset')} check={canReset(game, id)} className="flex-1 !px-2.5">⟲<span className={`ml-1 max-[380px]:hidden land:hidden ${played || selecting ? 'hidden' : ''}`}>{t('game.reset')}</span></ActionButton>
+        <ActionButton small onClick={askHint} className={`flex-1 !px-2.5 ${selecting && !vertical ? 'max-[380px]:hidden' : ''}`} ignoreBusy>💡</ActionButton>
       </div>
       <div className={`flex gap-1.5 ${vertical ? 'flex-col' : 'ml-auto'}`}>
-        <ActionButton onClick={act('draw')} check={canDraw(game, id)} variant={played ? 'secondary' : 'primary'} className="!px-3.5">
-          {poolEmpty ? t('game.pass') : t('game.draw')}
-        </ActionButton>
+        {selecting ? (
+          <ActionButton onClick={() => moveTo({ kind: 'new' })} variant="primary" className="!px-3.5 whitespace-nowrap">
+            + <span className="max-[380px]:hidden">{t('game.newMeld')}</span><span className="hidden max-[380px]:inline">{t('game.newMeldShort')}</span>
+          </ActionButton>
+        ) : (
+          <ActionButton onClick={act('draw')} check={canDraw(game, id)} variant={played ? 'secondary' : 'primary'} className="!px-3.5">
+            {poolEmpty ? t('game.pass') : t('game.draw')}
+          </ActionButton>
+        )}
         {(played || vertical) && (
           <ActionButton onClick={act('endTurn')} variant="good" className={`!px-3.5 ${canEndTurn(game, id).ok ? '' : 'opacity-60'}`}>
             {t('game.endTurn')} ✓

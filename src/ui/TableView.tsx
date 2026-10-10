@@ -37,7 +37,7 @@ export function TableView() {
   const melds = game.draft.table
   return (
     <div className="flex min-h-full flex-wrap content-start items-start gap-x-[calc(var(--table-w)*0.45)] gap-y-[calc(var(--table-w)*0.4)] p-3 pb-6">
-      {melds.length === 0 && !placing && (
+      {melds.length === 0 && (
         <p className="m-auto max-w-[17rem] pt-8 text-center text-sm text-ink/45">{t('game.emptyTable')}</p>
       )}
       {melds.map((m) => {
@@ -62,16 +62,6 @@ export function TableView() {
           </div>
         )
       })}
-      {placing && (
-        <button
-          type="button"
-          onClick={() => moveTo({ kind: 'new' })}
-          className="meld items-center border-2 border-dashed border-sea/60 font-display text-sm font-semibold text-sea"
-          style={{ height: 'calc(var(--table-w) * 1.34 + var(--table-w) * 0.28)', paddingInline: '0.8rem', animation: 'pulse-ring 1.4s infinite' }}
-        >
-          + {t('game.newMeld')}
-        </button>
-      )}
     </div>
   )
 }

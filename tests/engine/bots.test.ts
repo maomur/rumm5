@@ -62,3 +62,26 @@ describe('partidas solo con bots', () => {
     expect(s.players.reduce((a, p) => a + p.total, 0)).toBe(0)
   })
 })
+
+describe('pasos del bot', () => {
+  it('cada jugada de bot se puede reproducir paso a paso y acaba igual', async () => {
+    const { botSteps } = await import('../../src/engine/bot')
+    for (const seed of [3, 8, 21, 34]) {
+      let s = createGame(['hard', 'medium', 'easy'].map((l, i) => ({ name: `B${i}`, isBot: true, botLevel: l as BotLevel })), seed)
+      let multi = 0
+      while (s.phase === 'play') {
+        const a = decideBot(s)
+        const steps = botSteps(s, a)
+        if (a.type === 'play') {
+          expect(steps[steps.length - 1].type).toBe('endTurn')
+          if (steps.length > 2) multi++
+        }
+        const direct = applyAction(s, a)
+        for (const st of steps) s = applyAction(s, st)
+        expect(s.players.map((p) => p.rack.length)).toEqual(direct.players.map((p) => p.rack.length))
+        expect(s.current).toBe(direct.current)
+      }
+      expect(multi).toBeGreaterThan(0)
+    }
+  })
+})
