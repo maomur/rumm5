@@ -2,7 +2,7 @@ import { routePartykitRequest, Server, type Connection, type WSMessage } from 'p
 import { animationBudgetMs, RoomLogic, type HandleResult, type Room } from '../src/online/roomLogic'
 import type { ClientMsg, ServerMsg } from '../src/online/protocol'
 
-const VERSION = 'v1 · 2026-10-10'
+const VERSION = 'v2 · 2026-10-10'
 const BOT_DELAY_MS = 1000
 
 interface Env {

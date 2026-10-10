@@ -1,5 +1,5 @@
 {
-  "name": "rumm5-online",
+  "name": "rumm5",
   "main": "server/index.ts",
   "compatibility_date": "2025-09-01",
   "workers_dev": true,
