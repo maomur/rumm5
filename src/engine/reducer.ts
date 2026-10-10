@@ -7,8 +7,12 @@ import { canDraw, canEndTurn, canMove, canReset, canUndo, validatePlay } from '.
 const HISTORY_MAX = 60
 
 export class RuleError extends Error {
-  constructor(public reason: string, public vars?: Record<string, string | number>) {
+  reason: string
+  vars?: Record<string, string | number>
+  constructor(reason: string, vars?: Record<string, string | number>) {
     super(reason)
+    this.reason = reason
+    this.vars = vars
   }
 }
 

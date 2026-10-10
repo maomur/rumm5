@@ -1,32 +1,9 @@
-# React + TypeScript + Vite
+# Rumm5
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Juego de fichas (escaleras y grupos) para móvil: PWA, bots en 3 niveles y online con amigos.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+- `npm run dev`: app en local
+- `npm run dev:server` + `.env.development.local` con `VITE_PARTY_HOST=127.0.0.1:8787`: servidor online en local
+- `npm test`: tests del motor, bots y salas
+- `npm run build`: build de producción (Vercel la hace sola en cada push)
+- Servidor online: Cloudflare Worker `rumm5-online` (Durable Objects), `npx wrangler deploy`

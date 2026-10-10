@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -b && tsc -p tsconfig.server.json --noEmit",
+    "dev:server": "wrangler dev --port 8787",
+    "deploy:server": "wrangler deploy"
   },
   "dependencies": {
     "@fontsource-variable/fredoka": "^5.3.0",

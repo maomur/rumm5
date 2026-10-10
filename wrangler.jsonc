@@ -1,0 +1,10 @@
+{
+  "name": "rumm5-online",
+  "main": "server/index.ts",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "durable_objects": {
+    "bindings": [{ "name": "GameRoom", "class_name": "GameRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }]
+}

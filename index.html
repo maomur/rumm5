@@ -1,13 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rumm5</title>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#F4ECDD" />
+    <meta name="description" content="Rumm5: escaleras, grupos y mucha cabeza. Juega con bots o con amigos." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Rumm5" />
+    <title>Rumm5</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="static-splash" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#F4ECDD;z-index:100;transition:opacity .5s">
+        <div style="display:flex;gap:7px;align-items:flex-end">
+          <div style="width:46px;height:62px;border-radius:8px;background:#fffaf0;box-shadow:0 2px 6px rgba(60,40,10,.2);display:flex;align-items:center;justify-content:center;font:700 30px ui-rounded,system-ui,sans-serif;color:#B0442D;transform:rotate(-6deg)">R</div>
+          <div style="width:46px;height:62px;border-radius:8px;background:#fffaf0;box-shadow:0 2px 6px rgba(60,40,10,.2);display:flex;align-items:center;justify-content:center;font:700 30px ui-rounded,system-ui,sans-serif;color:#0B5CAD;transform:rotate(3deg) translateY(-4px)">U</div>
+          <div style="width:46px;height:62px;border-radius:8px;background:#fffaf0;box-shadow:0 2px 6px rgba(60,40,10,.2);display:flex;align-items:center;justify-content:center;font:700 30px ui-rounded,system-ui,sans-serif;color:#23262B;transform:rotate(-2deg)">M</div>
+          <div style="width:46px;height:62px;border-radius:8px;background:#fffaf0;box-shadow:0 2px 6px rgba(60,40,10,.2);display:flex;align-items:center;justify-content:center;font:700 30px ui-rounded,system-ui,sans-serif;color:#C9861A;transform:rotate(4deg) translateY(-2px)">M</div>
+          <div style="width:46px;height:62px;border-radius:8px;background:#fffaf0;box-shadow:0 2px 6px rgba(60,40,10,.2);display:flex;align-items:center;justify-content:center;font:700 30px ui-rounded,system-ui,sans-serif;color:#B0442D;transform:rotate(-5deg) translateY(3px)">5</div>
+        </div>
+        <div style="font:500 14px system-ui,sans-serif;color:rgba(35,38,43,.55)">Escaleras, grupos y mucha cabeza</div>
+      </div>
+      <script>document.getElementById('static-splash').dataset.t = String(performance.now())</script>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
