@@ -37,7 +37,7 @@ export function HomeScreen() {
           <ActionButton variant="good" onClick={cont} className="w-full">▶ {t('home.continue')}</ActionButton>
         )}
         <ActionButton variant="primary" onClick={() => go('setup')} className="w-full">{t('home.new')}</ActionButton>
-        <ActionButton onClick={() => go('online')} className="w-full">👥 {t('home.online')}</ActionButton>
+        {!import.meta.env.VITE_ARTIFACT && <ActionButton onClick={() => go('online')} className="w-full">👥 {t('home.online')}</ActionButton>}
         {lastRoom && (
           <ActionButton small onClick={() => { history.replaceState(null, '', `?sala=${lastRoom}`); go('online') }} className="w-full">
             {t('online.backToRoom', { code: lastRoom })}
