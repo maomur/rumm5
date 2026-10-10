@@ -33,17 +33,22 @@ export function sendAction(a: Action) {
 }
 
 export function connect(code: string, name: string) {
-  disconnect()
+  closeSocket()
   useOnline.setState({ code, status: 'connecting', room: null, you: null, error: null })
   try { localStorage.setItem('rumm5.lastRoom', code) } catch { /* */ }
-  socket = new PartySocket({ host: PARTY_HOST, party: 'game-room', room: code })
+  const sock = new PartySocket({ host: PARTY_HOST, party: 'game-room', room: code })
+  socket = sock
   const key = deviceKey()
-  socket.addEventListener('open', () => {
+  // una conexión vieja (de una sala de la que ya salimos) no debe tocar nada
+  const stale = () => socket !== sock
+  sock.addEventListener('open', () => {
+    if (stale()) return
     useOnline.setState({ status: 'open' })
     send({ t: 'hello', key, name }) // reidentificarse en cada (re)conexión
   })
-  socket.addEventListener('close', () => useOnline.setState({ status: 'closed' }))
-  socket.addEventListener('message', (e) => {
+  sock.addEventListener('close', () => { if (!stale()) useOnline.setState({ status: 'closed' }) })
+  sock.addEventListener('message', (e) => {
+    if (stale()) return
     const m = JSON.parse(String(e.data)) as ServerMsg
     if (m.t === 'room') {
       useOnline.setState({ room: m.room, you: m.you })
@@ -59,7 +64,7 @@ export function connect(code: string, name: string) {
     if (m.t === 'state') {
       const you = useOnline.getState().you
       const g = useGame.getState()
-      if (g.mode !== 'online' || g.screen !== 'game') g.startOnline(you ?? '', sendAction)
+      if (g.mode !== 'online' || g.screen !== 'game') g.startOnline(you ?? '', sendAction, leaveRoom)
       // eco de mi propio movimiento del borrador cuando ya he hecho otro después: lo salto
       if (m.by && m.by === you && m.seq !== null && m.seq < lastSent && m.events.length === 0) return
       useGame.getState().applyRemote(m.game, m.events, m.deadline)
@@ -67,10 +72,24 @@ export function connect(code: string, name: string) {
   })
 }
 
-export function disconnect() {
-  socket?.close()
+function closeSocket() {
+  const old = socket
   socket = null
-  useOnline.setState({ status: 'idle', room: null, you: null })
+  old?.close()
+}
+
+/** Salir de la sala de verdad: se cierra la conexión y la app olvida la sala */
+export function leaveRoom() {
+  closeSocket()
+  useOnline.setState({ code: null, status: 'idle', room: null, you: null, error: null })
+  try { localStorage.removeItem('rumm5.lastRoom') } catch { /* */ }
+  history.replaceState(null, '', location.pathname)
+}
+
+/** Volver atrás desde la sala de espera sin borrar el acceso rápido "Volver a la sala" */
+export function disconnect() {
+  closeSocket()
+  useOnline.setState({ code: null, status: 'idle', room: null, you: null, error: null })
 }
 
 export const online = {

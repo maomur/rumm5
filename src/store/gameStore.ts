@@ -55,6 +55,8 @@ interface Store {
   rulesOpen: boolean
   /** envía la acción al servidor (modo online) */
   send: ((a: Action) => void) | null
+  /** salir de la sala online */
+  leave: (() => void) | null
 
   go(screen: Screen): void
   newLocalGame(players: PlayerSetup[], settings: Partial<Settings>): void
@@ -74,7 +76,7 @@ interface Store {
   askHint(): void
   setMenu(open: boolean): void
   setRules(open: boolean): void
-  startOnline(seat: string, send: (a: Action) => void): void
+  startOnline(seat: string, send: (a: Action) => void, leave: () => void): void
 }
 
 const prefs = loadPrefs()
@@ -257,6 +259,7 @@ export const useGame = create<Store>((set, get) => {
     menuOpen: false,
     rulesOpen: false,
     send: null,
+    leave: null,
     ...reset,
 
     go: (screen) => set({ screen }),
@@ -365,11 +368,8 @@ export const useGame = create<Store>((set, get) => {
       stop()
       const s = get()
       if (s.mode === 'local') saveGame(s.game?.phase === 'play' || s.game?.phase === 'roundOver' ? s.game : null)
-      else {
-        void import('../online/client').then((m) => m.disconnect())
-        history.replaceState(null, '', location.pathname)
-      }
-      set({ ...reset, screen: 'home', menuOpen: false, game: s.mode === 'local' ? s.game : null, send: null })
+      else s.leave?.()
+      set({ ...reset, screen: 'home', menuOpen: false, game: s.mode === 'local' ? s.game : null, mode: 'local', send: null, leave: null, mySeat: null })
     },
 
     askHint() {
@@ -392,9 +392,9 @@ export const useGame = create<Store>((set, get) => {
     setMenu: (open) => set({ menuOpen: open }),
     setRules: (open) => set({ rulesOpen: open }),
 
-    startOnline(seat, send) {
+    startOnline(seat, send, leave) {
       stop()
-      set({ ...reset, mode: 'online', mySeat: seat, viewerId: seat, send, screen: 'game' })
+      set({ ...reset, mode: 'online', mySeat: seat, viewerId: seat, send, leave, screen: 'game' })
     },
   }
 })
