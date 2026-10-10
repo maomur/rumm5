@@ -21,6 +21,8 @@ export const BOT_DELAY_MS = 1700
 export const BOT_STEP_MS = 1300
 export const PENALTY_MS = 2600
 export const FIRST_MELD_MS = 2200
+/** cuánto parpadea la jugada que acaba de hacer un jugador */
+export const RECENT_MS = 5000
 
 export type Screen = 'home' | 'setup' | 'game' | 'online'
 
@@ -45,6 +47,8 @@ interface Store {
   fresh: TileId[]
   hint: TileId[]
   glowMelds: number[]
+  /** jugadas que acaba de completar alguien: parpadean un rato para que el siguiente las vea */
+  recentMelds: number[]
   invalidMelds: number[]
   turnDeadline: number | null
   menuOpen: boolean
@@ -80,6 +84,7 @@ let pumpTimer: ReturnType<typeof setTimeout> | null = null
 let botTimer: ReturnType<typeof setTimeout> | null = null
 let toastTimer: ReturnType<typeof setTimeout> | null = null
 let announceTimer: ReturnType<typeof setTimeout> | null = null
+let recentTimer: ReturnType<typeof setTimeout> | null = null
 
 export const useGame = create<Store>((set, get) => {
   const isLocal = (playerId: string) => {
@@ -153,8 +158,9 @@ export const useGame = create<Store>((set, get) => {
       }
       case 'play': {
         const mine = isLocal(ev.playerId)
-        set({ glowMelds: ev.meldIds })
-        setTimeout(() => set({ glowMelds: [] }), 1800)
+        if (recentTimer) clearTimeout(recentTimer)
+        set({ glowMelds: [], recentMelds: ev.meldIds })
+        recentTimer = setTimeout(() => set({ recentMelds: [] }), RECENT_MS)
         if (mine) sfx.meldOk()
         else sfx.otherPlay()
         if (ev.firstMeld) {
@@ -237,7 +243,7 @@ export const useGame = create<Store>((set, get) => {
 
   const reset = {
     queue: [] as GameEvent[], busy: false, toast: null, announce: null, showRoundOver: false, passPhoneTo: null,
-    fresh: [] as TileId[], hint: [] as TileId[], glowMelds: [] as number[], invalidMelds: [] as number[], selected: [] as TileId[], turnDeadline: null,
+    fresh: [] as TileId[], hint: [] as TileId[], glowMelds: [] as number[], recentMelds: [] as number[], invalidMelds: [] as number[], selected: [] as TileId[], turnDeadline: null,
   }
 
   return {

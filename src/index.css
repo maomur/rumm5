@@ -182,6 +182,16 @@ button {
 .meld.glow {
   animation: glow 1.8s ease-out;
 }
+.meld.recent {
+  animation: recent-blink 1s ease-in-out 5;
+}
+@keyframes recent-blink {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(201, 134, 26, 0.35); background: rgba(201, 134, 26, 0.08); }
+  50% { box-shadow: 0 0 0 3px #c9861a, 0 0 18px rgba(201, 134, 26, 0.55); background: rgba(201, 134, 26, 0.24); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meld.recent { animation: none; box-shadow: 0 0 0 3px #c9861a; }
+}
 @keyframes glow {
   0% { box-shadow: 0 0 0 3px #c9861a, 0 0 22px rgba(201, 134, 26, 0.6); background: rgba(201, 134, 26, 0.2); }
   100% { box-shadow: 0 0 0 0 transparent; }

@@ -12,6 +12,7 @@ export function TableView() {
   const selected = useGame((s) => s.selected)
   const viewerId = useGame((s) => s.viewerId)
   const glow = useGame((s) => s.glowMelds)
+  const recent = useGame((s) => s.recentMelds)
   const invalid = useGame((s) => s.invalidMelds)
   const toggleSelect = useGame((s) => s.toggleSelect)
   const moveTo = useGame((s) => s.moveSelectedTo)
@@ -46,7 +47,7 @@ export function TableView() {
         const cls = [
           'meld',
           changed && (a.valid ? 'pending' : 'invalid'),
-          glow.includes(m.id) && 'glow',
+          recent.includes(m.id) ? 'recent' : glow.includes(m.id) && 'glow',
           invalid.includes(m.id) && 'shake',
         ].filter(Boolean).join(' ')
         return (

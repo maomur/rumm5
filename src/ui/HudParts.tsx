@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { sfx } from '../audio/sfx'
 import { currentPlayer, draftChanged, placedFromRack } from '../engine/queries'
-import { canDraw, canEndTurn, canReset, canUndo } from '../engine/validate'
+import { canDraw, canEndTurn, canReset } from '../engine/validate'
 import { t } from '../i18n'
 import { fireTimeout, useGame } from '../store/gameStore'
 import { ActionButton, Avatar } from './primitives'
@@ -113,27 +113,30 @@ export function ActionBar({ vertical = false }: { vertical?: boolean }) {
   const played = draftChanged(game) && placedFromRack(game).length > 0
   const poolEmpty = game.pool.length === 0
   const selecting = selected.length > 0
-  const act = (type: 'undo' | 'reset' | 'draw' | 'endTurn') => () => { if (type !== 'undo') clear(); dispatch({ type, playerId: id }) }
+  const act = (type: 'reset' | 'draw' | 'endTurn') => () => { clear(); dispatch({ type, playerId: id }) }
+  // en pantallas estrechas los botones grandes encogen un poco para que quepan los tres
+  const big = '!px-3.5 whitespace-nowrap max-[380px]:!px-2.5 max-[380px]:!text-sm'
 
   return (
     <div className={vertical ? 'flex flex-col gap-1.5' : 'flex items-center gap-1.5 px-3 py-1.5'}>
       <div className="flex min-w-0 gap-1.5">
-        <ActionButton small onClick={act('undo')} check={canUndo(game, id)} className="flex-1 !px-2.5" >↶<span className={`ml-1 max-[380px]:hidden land:hidden ${played || selecting ? 'hidden' : ''}`}>{t('game.undo')}</span></ActionButton>
-        <ActionButton small onClick={act('reset')} check={canReset(game, id)} className="flex-1 !px-2.5">⟲<span className={`ml-1 max-[380px]:hidden land:hidden ${played || selecting ? 'hidden' : ''}`}>{t('game.reset')}</span></ActionButton>
-        <ActionButton small onClick={askHint} className={`flex-1 !px-2.5 ${selecting && !vertical ? 'max-[380px]:hidden' : ''}`} ignoreBusy>💡</ActionButton>
+        <ActionButton onClick={act('reset')} check={canReset(game, id)} className={`${big} ${vertical ? 'flex-1' : ''}`}>
+          ⟲ {t('game.reset')}
+        </ActionButton>
+        <ActionButton small onClick={askHint} className={`!px-2.5 ${(selecting || played) && !vertical ? 'max-[380px]:hidden' : ''}`} ignoreBusy>💡</ActionButton>
       </div>
       <div className={`flex gap-1.5 ${vertical ? 'flex-col' : 'ml-auto'}`}>
         {selecting ? (
-          <ActionButton onClick={() => moveTo({ kind: 'new' })} variant="primary" className="!px-3.5 whitespace-nowrap">
+          <ActionButton onClick={() => moveTo({ kind: 'new' })} variant="primary" className={big}>
             + <span className="max-[380px]:hidden">{t('game.newMeld')}</span><span className="hidden max-[380px]:inline">{t('game.newMeldShort')}</span>
           </ActionButton>
         ) : (
-          <ActionButton onClick={act('draw')} check={canDraw(game, id)} variant={played ? 'secondary' : 'primary'} className="!px-3.5">
+          <ActionButton onClick={act('draw')} check={canDraw(game, id)} variant={played ? 'secondary' : 'primary'} className={big}>
             {poolEmpty ? t('game.pass') : t('game.draw')}
           </ActionButton>
         )}
         {(played || vertical) && (
-          <ActionButton onClick={act('endTurn')} variant="good" className={`!px-3.5 ${canEndTurn(game, id).ok ? '' : 'opacity-60'}`}>
+          <ActionButton onClick={act('endTurn')} variant="good" className={`${big} ${canEndTurn(game, id).ok ? '' : 'opacity-60'}`}>
             {t('game.endTurn')} ✓
           </ActionButton>
         )}
