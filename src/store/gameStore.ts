@@ -99,7 +99,9 @@ export const useGame = create<Store>((set, get) => {
   function pump() {
     pumpTimer = null
     const s = get()
-    if (s.announce || s.showRoundOver) return // un popup abierto pausa la cola
+    // si la ronda ya no está terminada (p. ej. el anfitrión empezó la revancha), la ventana de puntos se cierra sola
+    if (s.showRoundOver && s.game?.phase !== 'roundOver') set({ showRoundOver: false })
+    if (s.announce || get().showRoundOver) return // un popup abierto pausa la cola
     const [ev, ...rest] = s.queue
     if (!ev) {
       set({ busy: false })
@@ -304,7 +306,10 @@ export const useGame = create<Store>((set, get) => {
 
     applyRemote(game, events, deadline) {
       const prevViewer = get().viewerId
-      set({ game, turnDeadline: deadline, viewerId: get().mySeat ?? prevViewer })
+      const reopened = get().showRoundOver && game.phase !== 'roundOver'
+      set({ game, turnDeadline: deadline, viewerId: get().mySeat ?? prevViewer, ...(reopened ? { showRoundOver: false } : {}) })
+      // la cola estaba parada por la ventana de puntos: hay que reanudarla
+      if (reopened && !pumpTimer) pumpTimer = setTimeout(pump, 50)
       enqueue(events)
     },
 
